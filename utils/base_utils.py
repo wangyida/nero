@@ -539,9 +539,16 @@ def rotate_image(rot, pose, K, img, mask):
 
 def resize_img(img, ratio):
     # if ratio>=1.0: return img
-    h, w, _ = img.shape
+    try:
+        h, w, img_cha = img.shape
+    except:
+        h, w = img.shape
+        img_cha = 1
     hn, wn = int(np.round(h * ratio)), int(np.round(w * ratio))
-    img_out = cv2.resize(downsample_gaussian_blur(img, ratio), (wn, hn), cv2.INTER_LINEAR)
+    if img_cha == 3:
+        img_out = cv2.resize(downsample_gaussian_blur(img, ratio), (wn, hn), cv2.INTER_LINEAR)
+    elif img_cha == 1:
+        img_out = cv2.resize(img, (wn, hn), cv2.INTER_NEAREST)
     return img_out
 
 

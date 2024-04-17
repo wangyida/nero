@@ -44,6 +44,16 @@ class EikonalLoss(Loss):
 
     def __call__(self, data_pr, data_gt, step, *args, **kwargs):
         weight = self.get_eikonal_weight(step)
+        """
+        try:
+            pts_per_ray = torch.sum(torch.tensor(data_pr['inner_mask']).int(), -1)
+            with torch.no_grad():
+                diff_rays = 0.001 / (data_pr['loss_rgb'] + 0.001)
+            diff_pts = torch.repeat_interleave(diff_rays, pts_per_ray)
+            outputs = {'loss_eikonal': data_pr['gradient_error'] * diff_pts * weight}
+        except:
+            outputs = {'loss_eikonal': data_pr['gradient_error'] * weight}
+        """
         outputs = {'loss_eikonal': data_pr['gradient_error'] * weight}
         return outputs
 

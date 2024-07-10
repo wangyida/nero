@@ -39,27 +39,19 @@ NeRO
             ...
 ```
 2. Run the training script
-```shell
-# reconstructing the "bell" of the Glossy Synthetic dataset
-python run_training.py --cfg configs/shape/syn/bell.yaml
-
-# reconstructing the "bear" of the Glossy Real dataset
-python run_training.py --cfg configs/shape/real/bear.yaml
-```
 general API for nerf synthetic data and colmap project
 ```shell
 # Nerf synthetic
 python run_training.py --cfg configs/shape/nerf/general.yaml object=drums dataset_dir=${your-path}/dataset/nerf_synthetic
 
 # COLMAP project
-python run_training.py --cfg configs/shape/real/general.yaml object=sedan dataset_dir=${your-path}/dataset/real
+python run_training.py --cfg configs/shape/real/general.yaml object=sedan dataset_dir=${your-path}/dataset/real name={in-case-you-wanna-save-in-a-specifc-folder}
 ```
 Intermediate results will be saved at `data/train_vis`. Models will be saved at `data/model`.
 
 3. Extract mesh from the model.
 ```shell
-python extract_mesh.py --cfg configs/shape/syn/bell.yaml
-python extract_mesh.py --cfg configs/shape/real/bear.yaml
+python extract_mesh.py --cfg configs/shape/real/general.yaml object=sedan dataset_dir=${your-path}/dataset/real name={in-case-you-wanna-save-in-a-specifc-folder}
 ```
 The extracted meshes will be saved at `data/meshes`.
 
@@ -87,6 +79,9 @@ python run_training.py --cfg configs/material/syn/bell.yaml
 
 # estimate BRDF of the "bear" of the Glossy Real dataset
 python run_training.py --cfg configs/material/real/bear.yaml
+
+# estimate BRDF of the "bear" of a general COLMAP project
+python run_training.py --cfg configs/material/real/general.yaml object=sedan dataset_dir=${your-path}/dataset/real mesh=${your-mesh-path}.ply
 ```
 Intermediate results will be saved at `data/train_vis`. Models will be saved at `data/model`.
 

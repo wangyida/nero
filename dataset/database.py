@@ -99,7 +99,6 @@ class GlossyRealDatabase(BaseDatabase):
         self.object_name, self.max_len = database_name.split('/')
 
         self.root = f'{dataset_dir}/{self.object_name}'
-        print(f'{self.root}')
         self._parse_colmap()
         self._normalize()
         if not self.max_len.startswith('raw'):
@@ -257,7 +256,7 @@ class GlossyRealDatabase(BaseDatabase):
 class GlossySyntheticDatabase(BaseDatabase):
     def __init__(self, database_name, dataset_dir):
         super().__init__(database_name)
-        _, model_name = database_name.split('/')
+        model_name = database_name.split('/')[-1]
         RENDER_ROOT = dataset_dir
         self.root = f'{RENDER_ROOT}/{model_name}'
         self.img_num = len(glob.glob(f'{self.root}/*.pkl'))
@@ -440,7 +439,6 @@ class NeRFSyntheticDatabase(BaseDatabase):
         super().__init__(database_name)
         model_name = database_name.split('/')[-1]
         RENDER_ROOT = dataset_dir
-        # RENDER_ROOT = '/media/data_nix/yzy/Git_Project/data/nerf_synthetic'
         self.root = f'{RENDER_ROOT}/{model_name}'
         self.scale_factor = 1.0
 
@@ -530,7 +528,6 @@ def parse_database_name(database_type: str, database_name: str, dataset_dir: str
         'custom': CustomDatabase,
         'nerf': NeRFSyntheticDatabase,
     }
-    # database_type = database_name.split('/')[0]
     if database_type in name2database:
         return name2database[database_type](database_name, dataset_dir)
     else:

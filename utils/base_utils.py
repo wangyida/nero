@@ -18,6 +18,7 @@ from torch import Tensor
 from tqdm import tqdm
 from transforms3d.axangles import mat2axangle
 from transforms3d.euler import euler2mat
+from omegaconf import OmegaConf
 
 
 def read_pickle(pkl_path):
@@ -319,6 +320,14 @@ def compute_precision_recall_np(pr, gt, eps=1e-5):
 def load_cfg(path):
     with open(path, 'r') as f:
         return yaml.load(f, Loader=yaml.FullLoader)
+
+def load_config(*yaml_files, cli_args=[]):
+    yaml_confs = [OmegaConf.load(f) for f in yaml_files]
+    cli_conf = OmegaConf.from_cli(cli_args)
+    print(cli_conf)
+    conf = OmegaConf.merge(*yaml_confs, cli_conf)
+    OmegaConf.resolve(conf)
+    return conf
 
 
 def get_stem(path, suffix_len=5):

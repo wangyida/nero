@@ -1,8 +1,10 @@
-name: drums_shape
+object: the_object_name
+name: ${object}_shape
 
 ####network#####
 network: shape
-database_name: nerf/drums
+database_type: nerf
+database_name: ${object}
 apply_acc_loss: true
 occ_loss_step: 20000
 is_nerf: true
@@ -16,15 +18,16 @@ freeze_inv_s_step: 15000
 
 ####dataset#####
 train_dataset_type: dummy
-dataset_dir: /lpai/volumes/perception/yidaw/datasets/nerf_synthetic # your_dataset_dir
+dataset_dir: your_dataset_dir
 train_dataset_cfg:
-  database_name: nerf/drums
+  database_name: ${object}
 val_set_list:
   -
     name: val
     type: dummy
     cfg:
-      database_name: nerf/drums
+      database_type: ${database_type}
+      database_name: ${object}
 
 ####trainier####
 optimizer_type: adam

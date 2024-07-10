@@ -95,10 +95,11 @@ class GlossyRealDatabase(BaseDatabase):
 
     def __init__(self, database_name, dataset_dir):
         super().__init__(database_name)
-        _, self.object_name, self.max_len = database_name.split('/')
+        # _, self.object_name, self.max_len = database_name.split('/')
+        self.object_name, self.max_len = database_name.split('/')
 
         self.root = f'{dataset_dir}/{self.object_name}'
-        print(self.root)
+        print(f'{self.root}')
         self._parse_colmap()
         self._normalize()
         if not self.max_len.startswith('raw'):
@@ -106,23 +107,24 @@ class GlossyRealDatabase(BaseDatabase):
             self.image_dir = ''
             self._crop()
         else:
-            h, w, _ = imread(f'{self.root}/colmap_processed/images/{self.image_names[self.img_ids[0]]}').shape
+            h, w, _ = imread(f'{self.root}/images/{self.image_names[self.img_ids[0]]}'.replace('JPG','jpg')).shape
             max_len = int(self.max_len.split('_')[1])
             ratio = float(max_len) / max(h, w)
             th, tw = int(ratio * h), int(ratio * w)
             rh, rw = th / h, tw / w
 
-            Path(f'{self.root}/colmap_processed/images_{self.max_len}').mkdir(exist_ok=True, parents=True)
-            Path(f'{self.root}/colmap_processed/masks/sam_{self.max_len}').mkdir(exist_ok=True, parents=True)
+            Path(f'{self.root}/images_{self.max_len}').mkdir(exist_ok=True, parents=True)
+            Path(f'{self.root}/masks/sam_{self.max_len}').mkdir(exist_ok=True, parents=True)
             for img_id in tqdm(self.img_ids):
-                if not Path(f'{self.root}/colmap_processed/images_{self.max_len}/{self.image_names[img_id]}').exists():
-                    img = imread(f'{self.root}/colmap_processed/images/{self.image_names[img_id]}')
+                if not Path(f'{self.root}/images_{self.max_len}/{self.image_names[img_id]}').exists():
+                    img = imread(f'{self.root}/images/{self.image_names[img_id]}'.replace('JPG','jpg'))
                     img = resize_img(img, ratio)
-                    imsave(f'{self.root}/colmap_processed/images_{self.max_len}/{self.image_names[img_id]}', img)
-                if not Path(f'{self.root}/colmap_processed/masks/sam_{self.max_len}/{self.image_names[img_id]}').exists():
-                    mask = imread(f'{self.root}/colmap_processed/masks/sam/{self.image_names[img_id]}')
-                    mask = resize_img(mask, ratio)
-                    imsave(f'{self.root}/colmap_processed/masks/sam_{self.max_len}/{self.image_names[img_id]}', mask)
+                    imsave(f'{self.root}/images_{self.max_len}/{self.image_names[img_id]}', img)
+                if not Path(f'{self.root}/masks/sam_{self.max_len}/{self.image_names[img_id]}').exists():
+                    if os.path.exists(f'{self.root}/masks/sam/{self.image_names[img_id]}'):
+                        mask = imread(f'{self.root}/masks/sam/{self.image_names[img_id]}')
+                        mask = resize_img(mask, ratio)
+                        imsave(f'{self.root}/masks/sam_{self.max_len}/{self.image_names[img_id]}', mask)
 
                 K = self.Ks[img_id]
                 self.Ks[img_id] = np.diag([rw, rh, 1.0]) @ K
@@ -131,8 +133,7 @@ class GlossyRealDatabase(BaseDatabase):
         if Path(f'{self.root}/cache.pkl').exists():
             self.poses, self.Ks, self.image_names, self.img_ids = read_pickle(f'{self.root}/cache.pkl')
         else:
-            print(f'{self.root}/colmap_processed/pcd_nero/sparse/0')
-            cameras, images, points3d = read_model(f'{self.root}/colmap_processed/pcd_nero/sparse/0')
+            cameras, images, points3d = read_model(f'{self.root}/sparse/0')
 
             self.poses, self.Ks, self.image_names, self.img_ids = {}, {}, {}, []
             for img_id, image in images.items():
@@ -179,7 +180,7 @@ class GlossyRealDatabase(BaseDatabase):
 
     def _normalize(self):
         # ref_points = self._load_point_cloud(f'{self.root}/object_point_cloud.ply')
-        ref_points = self._load_point_cloud(f'{self.root}/colmap_processed/pcd_nero/sparse/0/points3D.ply')
+        ref_points = self._load_point_cloud(f'{self.root}/sparse/0/points3D.ply')
         max_pt, min_pt = np.max(ref_points, 0), np.min(ref_points, 0)
         center = (max_pt + min_pt) * 0.5
         offset = -center  # x1 = x0 + offset
@@ -230,7 +231,7 @@ class GlossyRealDatabase(BaseDatabase):
             self.poses, self.Ks = poses_new, Ks_new
 
     def get_image(self, img_id):
-        img = imread(f'{self.root}/colmap_processed/images_{self.max_len}/{self.image_names[img_id]}')
+        img = imread(f'{self.root}/images_{self.max_len}/{self.image_names[img_id]}')
         return img
 
     def get_K(self, img_id):
@@ -244,7 +245,7 @@ class GlossyRealDatabase(BaseDatabase):
         return self.img_ids
 
     def get_mask(self, img_id):
-        mask = imread(f'{self.root}/colmap_processed/masks/sam_{self.max_len}/{self.image_names[img_id]}')
+        mask = imread(f'{self.root}/masks/sam_{self.max_len}/{self.image_names[img_id]}')
         return mask
 
     def get_depth(self, img_id):
@@ -437,7 +438,7 @@ class CustomDatabase(BaseDatabase):
 class NeRFSyntheticDatabase(BaseDatabase):
     def __init__(self, database_name, dataset_dir, testskip=8):
         super().__init__(database_name)
-        _, model_name = database_name.split('/')
+        model_name = database_name.split('/')[-1]
         RENDER_ROOT = dataset_dir
         # RENDER_ROOT = '/media/data_nix/yzy/Git_Project/data/nerf_synthetic'
         self.root = f'{RENDER_ROOT}/{model_name}'
@@ -518,17 +519,18 @@ class NeRFSyntheticDatabase(BaseDatabase):
         return depth, mask
 
     def get_mask(self, img_id):
-        raise NotImplementedError
+        mask = self.imgs[int(img_id)][..., -1]
+        return mask
 
 
-def parse_database_name(database_name: str, dataset_dir: str) -> BaseDatabase:
+def parse_database_name(database_type: str, database_name: str, dataset_dir: str) -> BaseDatabase:
     name2database = {
         'syn': GlossySyntheticDatabase,
         'real': GlossyRealDatabase,
         'custom': CustomDatabase,
         'nerf': NeRFSyntheticDatabase,
     }
-    database_type = database_name.split('/')[0]
+    # database_type = database_name.split('/')[0]
     if database_type in name2database:
         return name2database[database_type](database_name, dataset_dir)
     else:

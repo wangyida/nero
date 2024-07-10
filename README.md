@@ -46,6 +46,14 @@ python run_training.py --cfg configs/shape/syn/bell.yaml
 # reconstructing the "bear" of the Glossy Real dataset
 python run_training.py --cfg configs/shape/real/bear.yaml
 ```
+general API for nerf synthetic data and colmap project
+```shell
+# Nerf synthetic
+python run_training.py --cfg configs/shape/nerf/general.yaml object=drums dataset_dir=${your-path}/dataset/nerf_synthetic
+
+# COLMAP project
+python run_training.py --cfg configs/shape/real/general.yaml object=sedan dataset_dir=${your-path}/dataset/real
+```
 Intermediate results will be saved at `data/train_vis`. Models will be saved at `data/model`.
 
 3. Extract mesh from the model.

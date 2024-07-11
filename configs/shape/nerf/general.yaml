@@ -5,6 +5,7 @@ name: ${object}_shape
 network: shape
 database_type: nerf
 database_name: ${object}
+scale_factor: 0.5
 apply_acc_loss: true
 occ_loss_step: 20000
 is_nerf: true

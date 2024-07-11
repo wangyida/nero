@@ -29,6 +29,7 @@ def main():
     if cfg["database_type"] == 'syn' or cfg["database_type"] == 'nerf':
         object_name = cfg["database_name"].split('/')
         # output geometry
+        vertices /= cfg["scale_factor"]
         mesh = trimesh.Trimesh(vertices, triangles, vertex_normals=np.ones_like(vertices))
         output_dir = Path('data/meshes')
         output_dir.mkdir(exist_ok=True)

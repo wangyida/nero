@@ -474,7 +474,7 @@ class NeRFSyntheticDatabase(BaseDatabase):
 
         self.imgs = np.concatenate(all_imgs, 0)
         self.poses = np.concatenate(all_poses, 0)
-        self.poses[..., :3, 3] /= 2
+        # self.poses[..., :3, 3] /= 2
 
         self.img_num = self.imgs.shape[0]
         self.img_ids = [str(k) for k in range(self.img_num)]
@@ -509,7 +509,7 @@ class NeRFSyntheticDatabase(BaseDatabase):
         return self.img_ids
 
     def get_depth(self, img_id):
-        assert (self.scale_factor == 1.0)
+        # assert (self.scale_factor == 1.0)
         depth = torch.randn(800, 800).cpu().numpy()
         # depth = imread(f'{self.root}/test/r_{img_id}_depth_0001.png')
         depth = depth.astype(np.float32) / 65535 * 15
